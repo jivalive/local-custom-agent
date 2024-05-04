@@ -1,0 +1,27 @@
+# Use an official Python runtime as a parent image
+FROM python:3.10-slim
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Copy the current directory contents into the container at /app
+COPY . /app
+
+# Install any needed packages specified in requirements.txt
+# Stop the build if an error occurs during installation
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Gunicorn and uvicorn, ensure this does not fail silently
+RUN pip install gunicorn uvicorn[standard] && \
+    pip list && \
+    which gunicorn && \
+    echo "Gunicorn and Uvicorn installation successful."
+
+# Make port 8002 available to the world outside this container
+EXPOSE 8002
+
+# Define environment variable
+ENV NAME World
+
+# Run app.py when the container launches using Gunicorn with Uvicorn workers
+CMD ["gunicorn", "ollama_fastapi:app", "--worker-class", "uvicorn.workers.UvicornWorker", "--workers", "4", "--bind", "0.0.0.0:8002"]

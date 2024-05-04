@@ -1,0 +1,43 @@
+services:
+  chatbot:
+    build:
+      dockerfile: Dockerfile.chatbot
+      context: .
+    ports:
+      - "8501:8501"
+    networks:
+      - app
+
+  local-llama3-ready:
+    image: jivalive/llama3-ready
+    container_name: local-llama3-ready
+    ports:
+      - "11434:11434"
+    networks:
+      - app
+
+  web-fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile.fastapi
+    ports:
+      - "8002:8002"
+    volumes:
+      - .:/app
+    networks:
+      - app
+
+  jupyterlab:
+    build:
+      dockerfile: Dockerfile.jupyterlab
+      context: .
+    ports:
+        - 8888:8888
+    volumes:
+        - ./notebooks:/notebooks
+    networks:
+      - app
+  
+networks:
+  app:
+    driver: bridge

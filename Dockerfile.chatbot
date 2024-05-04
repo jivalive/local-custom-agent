@@ -1,0 +1,12 @@
+from python:3.9.0
+# USER root
+expose 8501
+cmd mkdir -p /app
+WORKDIR /app
+copy requirements.txt ./requirements.txt
+# run apt-get update
+# run apt-get install ffmpeg libsm6 libxext6 -y
+run pip3 install -r requirements.txt
+copy . .
+# ENTRYPOINT ["streamlit", "run"]
+CMD ["streamlit", "run", "streamlit_excel3.py"]
