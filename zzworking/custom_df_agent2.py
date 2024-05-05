@@ -71,11 +71,11 @@ def list_files(directory: str) -> str:
     full_directory_path = os.path.normpath(os.path.join(BASE_DIR, directory))  # Ensure full path is constructed with BASE_DIR
     try:
         if not os.path.isdir(full_directory_path):  # Check if the path is a directory
-            return f"Error: '{full_directory_path}' is not a directory. If you are trying to get Column details of the file then use 'Extract_Column_Names' tool instead with the filepath."
+            return f"Error: '{full_directory_path}' is not a directory. If you are trying to get Column details of the file then use 'Extract_Column_Names' tool instead with the filepath. And filepath should not contain extra quotes in it, for example:- download/filename.file_extension"
 
         files = [f for f in os.listdir(full_directory_path) if f.endswith('.xlsx') or f.endswith('.csv')]
         if files:
-            return "I found the following files: " + ", ".join(files)
+            return "I found the following files: " + ", ".join(files) + " . Now, if you are trying to get Column details of the file then use 'Extract_Column_Names' tool using the filepath which contains directory and filename for example:- download/filename.file_extension"
         else:
             return "No Excel or CSV files found in the directory."
     except Exception as e:
@@ -104,13 +104,13 @@ llm = Ollama(model="openhermes", base_url="http://localhost:11434", verbose=True
 # Define tools with more descriptive names and descriptions
 list_files_tool = Tool(
     func=list_files,
-    name="Find_Excel_and_CSV_Files",
-    description="Lists all Excel and CSV files in a specified directory to help users locate their data files. It will be given the filepath such 'download/filename.xlsx' remember that it will always have download directory attached to filepath."
+    name="Check_Folder_And_List_Files",
+    description="Lists all Excel and CSV files in a specified directory to help users locate their data files. It will be given the filepath such download/filename.xlsx remember that it will always have download directory attached to filepath."
 )
 get_column_names_tool = Tool(
     func=get_column_names,
     name="Extract_Column_Names",
-    description="Extracts and lists column names from a specified Excel or CSV file to aid users in understanding the structure of their data. It will be given the filepath such 'download/filename.xlsx' remember that it will always have download directory attached to filepath."
+    description="Extracts and lists column names from a specified Excel or CSV file to aid users in understanding the structure of their data. It will be given the filepath such download/filename.xlsx remember that it will always have download directory attached to filepath."
 )
 create_chart_tool = Tool(
     func=create_chart,
@@ -124,7 +124,7 @@ agent = initialize_agent(
     llm=llm,
     agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
     verbose=True,
-    max_iterations=8,
+    max_iterations=9,
     handle_parsing_errors=True
 )
 
@@ -153,8 +153,8 @@ def generate_prompt(user_query):
     """
     if 'chart' in user_query.lower():
         return f"""
-        TASK: The user has requested a chart. First, verify the presence of the 'download' folder.
-        Use the 'Find_Excel_and_CSV_Files' tool to list all relevant files, files will be in directory named 'download'. Once the file is identified,
+        TASK: The user has requested a chart. First, verify the presence of the download folder with name download.
+        Use the 'Check_Folder_And_List_Files' tool to list all relevant files, files will be in directory named download. Once the file is identified,
         use the 'Extract_Column_Names' tool to retrieve and list all column names from the specified file.
         Analyze the columns to determine which can be used to create the chart effectively.
         Based on the columns found and the data within, construct the input for the 'Create_Chart' tool in the format 'file_path;column1,column2'
@@ -165,9 +165,9 @@ def generate_prompt(user_query):
     else:
         return f"""
         TASK: Analyze the user's query to understand what specific information is needed.
-        If it relates to file details, confirm the presence of the 'download' folder and use the 'Find_Excel_and_CSV_Files' tool to list all relevant files.
+        If it relates to file details, confirm the presence of the download folder with name download and use the 'Check_Folder_And_List_Files' tool to list all relevant files.
         If the query involves specific data within the files, use the 'Extract_Column_Names' tool to detail the structure of the specified data file,
-        making sure to include the directory in the file path for example file path will be 'download/filename.xlsx'. 
+        making sure to include the directory in the file path for example file path will be download/filename.xlsx 
 
         USER QUERY: {user_query}
         """
@@ -181,6 +181,7 @@ def execute_custom_df_agent_query(user_query):
     }
 
 # Example usage of the function
-user_query = "Create a bar chart using marks data file"
+# user_query = "Create a bar chart using marks data file"
+user_query = "Create a sales pie chart showing in sales data file"
 output = execute_custom_df_agent_query(user_query=user_query)
 print(output)
