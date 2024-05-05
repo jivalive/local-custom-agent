@@ -28,14 +28,15 @@ def main():
     st.title("Jivalive ChatBot")
     st.header("Ask your CSV 📈")
 
-    llm = Ollama(model="llama3", base_url="http://local-llama3-ready:11434", verbose=True)
+    llm = Ollama(model="openhermes", base_url="http://localhost:11434", verbose=True)
     
     uploaded_file = st.sidebar.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx"])
     if uploaded_file is not None:
         # Determine the file type and read it accordingly
         file_extension = os.path.splitext(uploaded_file.name)[1]
         if file_extension.lower() == '.xlsx':
-            sheet_name = st.sidebar.text_input("Enter Excel sheet name (default is the first sheet):", value="")
+            # sheet_name = st.sidebar.text_input("Enter Excel sheet name (default is the first sheet):", value="")
+            sheet_name = 0
             if not sheet_name:
                 sheet_name = 0  # default to the first sheet if no name provided
             data = pd.read_excel(uploaded_file, sheet_name=sheet_name, engine='openpyxl')

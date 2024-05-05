@@ -51,33 +51,33 @@ llm = Ollama(model="openhermes", base_url="http://localhost:11434", verbose=True
 tools = [lower_case_tool]
 
 # # Initialize the agent with the list of tools
-# agent = initialize_agent(
-#     tools=tools,
-#     llm=llm,
-#     agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
-#     verbose=True,
-#     max_iterations=4,
-#     handle_parsing_errors=_handle_error
-# )
+agent = initialize_agent(
+    tools=tools,
+    llm=llm,
+    agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+    verbose=True,
+    max_iterations=4,
+    handle_parsing_errors=_handle_error
+)
 
 # Execute the tool within the agent
-input = "Convert 'THIS TEXT' to lowercase and stop. I want nothing else."
-# # output = agent.run("Convert 'THIS TEXT' to lowercase and stop. I want nothing else.")
+# input = "Convert 'THIS TEXT' to lowercase and stop. I want nothing else."
+output = agent.run("Convert THIsdisjd hhuSFShdS dshASAd jsdis TEwadXT to lowercase and stop. I want nothing else.")
 # output = agent.invoke({"input": input})
 # print(output)
 
 
-agent_obj = StructuredChatAgent.from_llm_and_tools(
-    llm=llm,
-    tools=tools,
-)
+# agent_obj = StructuredChatAgent.from_llm_and_tools(
+#     llm=llm,
+#     tools=tools,
+# )
 
-agent_executor = AgentExecutor.from_agent_and_tools(
-    agent=agent_obj,
-    tools=tools,
-    verbose=True,
-    return_intermediate_steps=True
-)
+# agent_executor = AgentExecutor.from_agent_and_tools(
+#     agent=agent,
+#     tools=tools,
+#     verbose=True,
+#     return_intermediate_steps=True
+# )
 
-output = agent_executor({"input": input})
+# output = agent_executor({"input": input})
 print(output)
