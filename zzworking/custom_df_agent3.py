@@ -12,6 +12,14 @@ import time
 BASE_DIR = os.getcwd()  # Modify this path to the directory you are using
 
 @tool
+def summarize_data(input_string: str) -> str:
+    """
+    This tool takes a string data  and summarize the data given in a crisp manner."
+    """
+    prompt = f"Now we have the input data as {input_string}. \n we should summarize it as per the user request and return the output in crisp manner."
+    return prompt
+
+@tool
 def create_chart(input_string: str) -> str:
     """
     Parses the input string to get the file path and column names, reads the specified Excel or CSV file,
@@ -117,10 +125,15 @@ create_chart_tool = Tool(
     name="Create_Chart",
     description="Creates a chart from specified columns in an Excel or CSV file and saves it as an image. If you have the columns ready, then you can create a chart using this tool."
 )
+summarize_data_tool = Tool(
+    func=summarize_data,
+    name="Summarize_Data",
+    description="This tool take a string input data  and summarizes the given data in a crisp manner."
+)
 
 # Initialize the agent with the list of tools
 agent = initialize_agent(
-    tools=[list_files_tool, get_column_names_tool, create_chart_tool],
+    tools=[list_files_tool, get_column_names_tool, create_chart_tool, summarize_data_tool],
     llm=llm,
     agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
     verbose=True,
@@ -159,6 +172,8 @@ def generate_prompt(user_query):
         Analyze the columns to determine which can be used to create the chart effectively.
         Based on the columns found and the data within, construct the input for the 'Create_Chart' tool in the format 'file_path;column1,column2'
         and use it to generate the chart. Ensure the columns selected are appropriate for the type of chart requested by the user.
+        If user has asked to summarize then you should have some data to give the Summarize_Data tool, so make sure that you have some data, if you don't have the data then you should follow a path to get the data first.
+        Remember that Summarize_Data tool will only take a string input  and returns a string output, so use the tool accordingly.
 
         USER QUERY: {user_query}
         """
@@ -168,7 +183,9 @@ def generate_prompt(user_query):
         If it relates to file details, confirm the presence of the download folder with name download and use the 'Check_Folder_And_List_Files' tool to list all relevant files.
         If the query involves specific data within the files, use the 'Extract_Column_Names' tool to detail the structure of the specified data file,
         making sure to include the directory in the file path for example file path will be download/filename.xlsx 
-
+        If user has asked to summarize then you should have some data to give the Summarize_Data tool, so make sure that you have some data, if you don't have the data then you should follow a path to get the data first.
+        Remember that Summarize_Data tool will only take a string input  and returns a string output, so use the tool accordingly.
+        
         USER QUERY: {user_query}
         """
 
@@ -182,6 +199,73 @@ def execute_custom_df_agent_query(user_query):
 
 # Example usage of the function
 # user_query = "Create a chart using marks data file"
-user_query = "Create a sales chart using sales data file"
+# user_query = "Create a sales bar chart using sales data file"
+# user_query = "summarize the sales data"
+# output = execute_custom_df_agent_query(user_query=user_query)
+# print(output)
+
+df_data = """
+camera_id,monotainer_id,lane_name,sorting_timestamp,key_str,ifstaged,staged_timestamp,ifprocessed,processed_timestamp,ifuntagged
+C001,511759,chatham,2023-06-13T08:30:00,511759#2023-06-13T08:30:00,TRUE,2023-06-13T21:45:00,TRUE,2023-06-13T21:52:00,FALSE
+C001,101FA0,chatham,2023-06-13T09:30:00,101FA0#2023-06-13T09:30:00,TRUE,2023-06-13T21:46:01,TRUE,2023-06-13T21:56:01,FALSE
+C001,23040B,chatham,2023-06-13T10:30:00,23040B#2023-06-13T10:30:00,TRUE,2023-06-13T21:47:02,TRUE,2023-06-13T21:57:02,FALSE
+C001,24A712,chatham,2023-06-13T11:30:00,24A712#2023-06-13T11:30:00,TRUE,2023-06-13T22:15:03,TRUE,2023-06-13T22:20:03,FALSE
+C001,32AFB8,chatham,2023-06-13T12:30:00,32AFB8#2023-06-13T12:30:00,TRUE,2023-06-13T22:20:04,TRUE,2023-06-13T22:30:04,FALSE
+C001,46B101,chatham,2023-06-13T13:30:00,46B101#2023-06-13T13:30:00,TRUE,2023-06-13T22:22:05,TRUE,2023-06-13T22:32:05,FALSE
+C001,55287F,chatham,2023-06-13T14:30:00,55287F#2023-06-13T14:30:00,TRUE,2023-06-13T22:25:06,TRUE,2023-06-13T22:35:06,FALSE
+C001,5D3D5F,chatham,2023-06-13T15:30:00,5D3D5F#2023-06-13T15:30:00,TRUE,2023-06-13T22:30:07,TRUE,2023-06-13T22:40:07,FALSE
+C001,711D5A,chatham,2023-06-13T16:30:00,711D5A#2023-06-13T16:30:00,TRUE,2023-06-13T22:32:08,TRUE,2023-06-13T22:42:08,FALSE
+C001,99BC75,chatham,2023-06-13T17:30:00,99BC75#2023-06-13T17:30:00,TRUE,2023-06-13T22:35:09,TRUE,2023-06-13T22:45:09,FALSE
+C001,9D4C80,chatham,2023-06-13T18:30:00,9D4C80#2023-06-13T18:30:00,TRUE,2023-06-13T22:40:10,TRUE,2023-06-13T22:48:10,FALSE
+C001,A19AA6,chatham,2023-06-13T19:30:00,A19AA6#2023-06-13T19:30:00,TRUE,2023-06-13T22:45:11,TRUE,2023-06-13T22:53:11,FALSE
+C001,A807AF,chatham,2023-06-13T20:30:00,A807AF#2023-06-13T20:30:00,TRUE,2023-06-13T22:47:12,TRUE,2023-06-13T22:55:12,FALSE
+C001,AA7F82,chatham,2023-06-13T21:30:00,AA7F82#2023-06-13T21:30:00,TRUE,2023-06-13T22:50:13,TRUE,2023-06-13T22:58:13,FALSE
+C001,DA9726,chatham,2023-06-13T21:35:00,DA9726#2023-06-13T21:35:00,TRUE,2023-06-13T22:55:14,TRUE,2023-06-13T23:05:14,FALSE
+C001,521759,chatham,2023-06-13T08:30:03,521759#2023-06-13T08:30:03,TRUE,2023-06-13T21:45:00,TRUE,2023-06-13T21:52:00,FALSE
+C001,202FA0,chatham,2023-06-13T09:30:04,202FA0#2023-06-13T09:30:04,TRUE,2023-06-13T21:46:01,TRUE,2023-06-13T21:56:01,FALSE
+C001,23040B,chatham,2023-06-13T10:30:02,23040B#2023-06-13T10:30:02,TRUE,2023-06-13T21:47:02,TRUE,2023-06-13T21:57:02,FALSE
+C001,24A712,chatham,2023-06-13T11:30:05,24A712#2023-06-13T11:30:05,TRUE,2023-06-13T22:15:03,TRUE,2023-06-13T22:20:03,FALSE
+C001,32AFC9,chatham,2023-06-13T12:30:04,32AFC9#2023-06-13T12:30:04,TRUE,2023-06-13T22:20:04,TRUE,2023-06-13T22:30:04,FALSE
+C001,46B202,chatham,2023-06-13T13:30:06,46B202#2023-06-13T13:30:06,TRUE,2023-06-13T22:22:05,TRUE,2023-06-13T22:32:05,FALSE
+C001,55288B,chatham,2023-06-13T14:30:07,55288B#2023-06-13T14:30:07,TRUE,2023-06-13T22:25:06,TRUE,2023-06-13T22:35:06,FALSE
+C001,5D3D55,chatham,2023-06-13T15:30:08,5D3D55#2023-06-13T15:30:08,TRUE,2023-06-13T22:30:07,TRUE,2023-06-13T22:40:07,FALSE
+C001,711D7B,chatham,2023-06-13T16:30:09,711D7B#2023-06-13T16:30:09,TRUE,2023-06-13T22:32:08,TRUE,2023-06-13T22:42:08,FALSE
+C001,99BC96,chatham,2023-06-13T17:30:05,99BC96#2023-06-13T17:30:05,TRUE,2023-06-13T22:35:09,TRUE,2023-06-13T22:45:09,FALSE
+C001,9D4C90,chatham,2023-06-13T18:30:06,9D4C90#2023-06-13T18:30:06,TRUE,2023-06-13T22:40:10,TRUE,2023-06-13T22:48:10,FALSE
+C001,A19AB9,chatham,2023-06-13T19:30:07,A19AB9#2023-06-13T19:30:07,TRUE,2023-06-13T22:45:11,TRUE,2023-06-13T22:53:11,FALSE
+C001,A807CD,chatham,2023-06-13T20:30:02,A807CD#2023-06-13T20:30:02,TRUE,2023-06-13T22:47:12,TRUE,2023-06-13T22:55:12,FALSE
+C001,AA7F90,chatham,2023-06-13T21:30:01,AA7F90#2023-06-13T21:30:01,TRUE,2023-06-13T22:50:13,TRUE,2023-06-13T22:58:13,FALSE
+C001,DA9756,chatham,2023-06-13T21:35:06,DA9756#2023-06-13T21:35:06,TRUE,2023-06-13T22:55:14,TRUE,2023-06-13T23:05:14,FALSE
+C002,511759,Toronto,2023-06-13T08:30:00,511759#2023-06-13T08:30:00,TRUE,2023-06-13T21:45:00,TRUE,2023-06-13T21:52:00,FALSE
+C002,101FA0,Toronto,2023-06-13T09:30:00,101FA0#2023-06-13T09:30:00,TRUE,2023-06-13T21:46:01,TRUE,2023-06-13T21:56:01,FALSE
+C002,23040B,Toronto,2023-06-13T10:30:00,23040B#2023-06-13T10:30:00,TRUE,2023-06-13T21:47:02,TRUE,2023-06-13T21:57:02,FALSE
+C002,24A712,Toronto,2023-06-13T11:30:00,24A712#2023-06-13T11:30:00,TRUE,2023-06-13T22:15:03,TRUE,2023-06-13T22:20:03,FALSE
+C002,32AFB8,Toronto,2023-06-13T12:30:00,32AFB8#2023-06-13T12:30:00,TRUE,2023-06-13T22:20:04,TRUE,2023-06-13T22:30:04,FALSE
+C002,46B101,Toronto,2023-06-13T13:30:00,46B101#2023-06-13T13:30:00,TRUE,2023-06-13T22:22:05,TRUE,2023-06-13T22:32:05,FALSE
+C002,55287F,Toronto,2023-06-13T14:30:00,55287F#2023-06-13T14:30:00,TRUE,2023-06-13T22:25:06,TRUE,2023-06-13T22:35:06,FALSE
+C002,5D3D5F,Toronto,2023-06-13T15:30:00,5D3D5F#2023-06-13T15:30:00,TRUE,2023-06-13T22:30:07,TRUE,2023-06-13T22:40:07,FALSE
+C002,711D5A,Toronto,2023-06-13T16:30:00,711D5A#2023-06-13T16:30:00,TRUE,2023-06-13T22:32:08,TRUE,2023-06-13T22:42:08,FALSE
+C002,99BC75,Toronto,2023-06-13T17:30:00,99BC75#2023-06-13T17:30:00,TRUE,2023-06-13T22:35:09,TRUE,2023-06-13T22:45:09,FALSE
+C002,9D4C80,Toronto,2023-06-13T18:30:00,9D4C80#2023-06-13T18:30:00,TRUE,2023-06-13T22:40:10,TRUE,2023-06-13T22:48:10,FALSE
+C002,A19AA6,Toronto,2023-06-13T19:30:00,A19AA6#2023-06-13T19:30:00,TRUE,2023-06-13T22:45:11,TRUE,2023-06-13T22:53:11,FALSE
+C002,A807AF,Toronto,2023-06-13T20:30:00,A807AF#2023-06-13T20:30:00,TRUE,2023-06-13T22:47:12,TRUE,2023-06-13T22:55:12,FALSE
+C002,AA7F82,Toronto,2023-06-13T21:30:00,AA7F82#2023-06-13T21:30:00,TRUE,2023-06-13T22:50:13,TRUE,2023-06-13T22:58:13,FALSE
+C002,DA9726,Toronto,2023-06-13T21:35:00,DA9726#2023-06-13T21:35:00,TRUE,2023-06-13T22:55:14,TRUE,2023-06-13T23:05:14,FALSE
+C002,521759,Toronto,2023-06-13T08:30:03,521759#2023-06-13T08:30:03,TRUE,2023-06-13T21:45:00,TRUE,2023-06-13T21:52:00,FALSE
+C002,202FA0,Toronto,2023-06-13T09:30:04,202FA0#2023-06-13T09:30:04,TRUE,2023-06-13T21:46:01,TRUE,2023-06-13T21:56:01,FALSE
+C002,23040B,Toronto,2023-06-13T10:30:02,23040B#2023-06-13T10:30:02,TRUE,2023-06-13T21:47:02,TRUE,2023-06-13T21:57:02,FALSE
+C002,24A712,Toronto,2023-06-13T11:30:05,24A712#2023-06-13T11:30:05,TRUE,2023-06-13T22:15:03,TRUE,2023-06-13T22:20:03,FALSE
+C002,32AFC9,Toronto,2023-06-13T12:30:04,32AFC9#2023-06-13T12:30:04,TRUE,2023-06-13T22:20:04,TRUE,2023-06-13T22:30:04,FALSE
+C002,46B202,Toronto,2023-06-13T13:30:06,46B202#2023-06-13T13:30:06,TRUE,2023-06-13T22:22:05,TRUE,2023-06-13T22:32:05,FALSE
+C002,55288B,Toronto,2023-06-13T14:30:07,55288B#2023-06-13T14:30:07,TRUE,2023-06-13T22:25:06,TRUE,2023-06-13T22:35:06,FALSE
+C002,5D3D55,Toronto,2023-06-13T15:30:08,5D3D55#2023-06-13T15:30:08,TRUE,2023-06-13T22:30:07,TRUE,2023-06-13T22:40:07,FALSE
+C002,711D7B,Toronto,2023-06-13T16:30:09,711D7B#2023-06-13T16:30:09,TRUE,2023-06-13T22:32:08,TRUE,2023-06-13T22:42:08,FALSE
+C002,99BC96,Toronto,2023-06-13T17:30:05,99BC96#2023-06-13T17:30:05,TRUE,2023-06-13T22:35:09,TRUE,2023-06-13T22:45:09,FALSE
+C002,9D4C90,Toronto,2023-06-13T18:30:06,9D4C90#2023-06-13T18:30:06,TRUE,2023-06-13T22:40:10,TRUE,2023-06-13T22:48:10,FALSE
+C002,A19AB9,Toronto,2023-06-13T19:30:07,A19AB9#2023-06-13T19:30:07,TRUE,2023-06-13T22:45:11,TRUE,2023-06-13T22:53:11,FALSE
+C002,A807CD,Toronto,2023-06-13T20:30:02,A807CD#2023-06-13T20:30:02,TRUE,2023-06-13T22:47:12,TRUE,2023-06-13T22:55:12,FALSE
+C002,AA7F90,Toronto,2023-06-13T21:30:01,AA7F90#2023-06-13T21:30:01,TRUE,2023-06-13T22:50:13,TRUE,2023-06-13T22:58:13,FALSE
+"""
+user_query = f"please summarize the below data: \n\n\n\n {df_data}"
 output = execute_custom_df_agent_query(user_query=user_query)
 print(output)
