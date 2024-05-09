@@ -81,6 +81,96 @@ def st_capture(output_func):
 
 
 ##########################################################################################################
+# @tool
+# def read_csv_as_string(input_string: str) -> str:
+#     """
+#     Reads specified columns from a CSV or Excel file and returns the data as a CSV string.
+#     Additionally, it performs actions like counting 'Pass' and 'Fail' under a specified column,
+#     noting comments and test names where the status is 'Fail', and creating a pie chart based on 'Pass' and 'Fail' values.
+    
+#     Args:
+#     input_string (str): A single string containing the file path and column names,
+#                         formatted as 'file_path;column1,column2,...'.
+    
+#     Returns:
+#     str: A summary which contains <Final Answer>:- and the details. Then can understand that we have the final answer that user has requested.
+#     """
+#     try:
+#         # Split the input string to separate the file path and column names
+#         parts = input_string.split(';')
+#         if len(parts) != 2:
+#             raise ValueError("Input string format must be 'file_path;column1,column2,...'")
+        
+#         file_path, column_names = parts[0], parts[1]
+#         column_names = column_names.split(',')  # Split column names into a list
+
+#         print('filename: ', file_path)
+#         print('column_names: ', column_names)
+        
+#         # Read the CSV or Excel file into a DataFrame
+#         if file_path.endswith('.csv'):
+#             df = pd.read_csv(file_path)
+#         elif file_path.endswith('.xlsx') or file_path.endswith('.xls'):
+#             df = pd.read_excel(file_path)
+#         else:
+#             raise ValueError("Unsupported file format. Only .csv, .xlsx, or .xls files are supported.")
+
+#         print(df.head())
+#         # Normalize input column names to match DataFrame column names' case sensitivity and spacing
+#         normalized_df_columns = {col.strip().lower(): col for col in df.columns}
+#         selected_columns = []
+#         for col in column_names:
+#             col_normalized = col.strip().lower()
+#             if col_normalized in normalized_df_columns:
+#                 selected_columns.append(normalized_df_columns[col_normalized])
+#             else:
+#                 raise ValueError(f"Column '{str(traceback.print_exc(file=sys.stdout))}' not found in the file.")
+
+#         print('selected_columns: ', selected_columns)
+        
+#         # Check if the list of columns is empty (which means no valid columns were provided)
+#         if not selected_columns:
+#             raise ValueError("No valid columns provided or columns not found in the data.")
+
+#         # Select only the specified columns
+#         df = df[selected_columns]
+        
+#         fail_comments = df.loc[df[selected_columns[1]].str.lower() == 'fail', selected_columns[2]]
+#         print(f"Failed comments:-\n{fail_comments.count()}\n")
+
+#         pass_count = (df[selected_columns[1]].str.lower() == 'pass').sum()
+#         fail_count = (df[selected_columns[1]].str.lower() == 'fail').sum()
+        
+#         print(pass_count)
+#         print(fail_count)
+        
+#         fail_rows = df[df[selected_columns[1]].str.lower() == 'fail']
+#         fail_comments = fail_rows[selected_columns[2]].dropna().tolist()
+#         print(f"Failed comments:-\n{fail_comments}\n")
+        
+#         failed_tests_output = "Below are the failed tests:"
+    
+#         for index, comment in enumerate(fail_comments, start=1):
+#             failed_tests_output += f"\n\n{index}. {comment}"
+
+
+#         # Create a pie chart based on 'Pass' and 'Fail' values
+#         plt.figure(figsize=(6, 6))
+#         plt.pie([pass_count, fail_count], labels=['Pass', 'Fail'], autopct='%1.1f%%', startangle=140)
+#         chart_filename = f"generated_charts/pie_chart_{uuid.uuid4()}.png"  # Generate unique filename using uuid
+#         plt.savefig(chart_filename)
+
+#         # Prepare summary information
+#         summary = f"Summary:\nPass count: {pass_count}\nFail count: {fail_count}\n"
+#         if fail_comments:
+#             summary += failed_tests_output
+
+#         result = f"<Final answer>:-\n{summary}\n\nChart filename: {chart_filename}"
+        
+#         return result
+#     except Exception as e:
+#         return f"ERROR OCCURRED:\n{str(traceback.print_exc(file=sys.stdout))}\n\n If Column not found then call 'Extract_Column_Names' to get column names and then call 'Read_CSV_As_String' tool with input example:- 'download/SmokeTest_Report.csv;Test,Status: 03/21/2023,Comment: 03/21/2023'"
+
 @tool
 def read_csv_as_string(input_string: str) -> str:
     """
@@ -101,12 +191,8 @@ def read_csv_as_string(input_string: str) -> str:
         if len(parts) != 2:
             raise ValueError("Input string format must be 'file_path;column1,column2,...'")
         
-        file_path, column_names = parts[0], parts[1]
-        column_names = column_names.split(',')  # Split column names into a list
+        file_path, column_names = parts[0], parts[1].split(',')
 
-        print('filename: ', file_path)
-        print('column_names: ', column_names)
-        
         # Read the CSV or Excel file into a DataFrame
         if file_path.endswith('.csv'):
             df = pd.read_csv(file_path)
@@ -115,7 +201,6 @@ def read_csv_as_string(input_string: str) -> str:
         else:
             raise ValueError("Unsupported file format. Only .csv, .xlsx, or .xls files are supported.")
 
-        print(df.head())
         # Normalize input column names to match DataFrame column names' case sensitivity and spacing
         normalized_df_columns = {col.strip().lower(): col for col in df.columns}
         selected_columns = []
@@ -126,50 +211,31 @@ def read_csv_as_string(input_string: str) -> str:
             else:
                 raise ValueError(f"Column '{col}' not found in the file.")
 
-        print('selected_columns: ', selected_columns)
-        
-        # Check if the list of columns is empty (which means no valid columns were provided)
-        if not selected_columns:
-            raise ValueError("No valid columns provided or columns not found in the data.")
-
         # Select only the specified columns
         df = df[selected_columns]
         
-        fail_comments = df.loc[df[selected_columns[1]].str.lower() == 'fail', selected_columns[2]]
-        print(f"Failed comments:-\n{fail_comments.count()}\n")
-
+        # Gather comments and counts for failed tests
         pass_count = (df[selected_columns[1]].str.lower() == 'pass').sum()
         fail_count = (df[selected_columns[1]].str.lower() == 'fail').sum()
-        
-        print(pass_count)
-        print(fail_count)
-        
-        fail_rows = df[df[selected_columns[1]].str.lower() == 'fail']
-        fail_comments = fail_rows[selected_columns[2]].dropna().tolist()
-        print(f"Failed comments:-\n{fail_comments}\n")
-        
-        failed_tests_output = "Below are the failed tests:"
-    
-        for index, comment in enumerate(fail_comments, start=1):
-            failed_tests_output += f"\n\n{index}. {comment}"
+        fail_comments = df.loc[df[selected_columns[1]].str.lower() == 'fail', selected_columns[2]].dropna().tolist()
 
-
-        # Create a pie chart based on 'Pass' and 'Fail' values
+        # Create a pie chart
         plt.figure(figsize=(6, 6))
         plt.pie([pass_count, fail_count], labels=['Pass', 'Fail'], autopct='%1.1f%%', startangle=140)
-        chart_filename = f"generated_charts/pie_chart_{uuid.uuid4()}.png"  # Generate unique filename using uuid
+        chart_filename = f"generated_charts/pie_chart_{uuid.uuid4()}.png"
         plt.savefig(chart_filename)
+        plt.close()
 
-        # Prepare summary information
-        summary = f"Summary:\nPass count: {pass_count}\nFail count: {fail_count}\n"
-        if fail_comments:
-            summary += failed_tests_output
+        # Prepare and return the summary
+        failed_tests_output = "\n".join([f"{idx+1}. {comment}" for idx, comment in enumerate(fail_comments)])
+        summary = f"Summary:\nPass count: {pass_count}\nFail count: {fail_count}\nBelow are the failed tests:\n{failed_tests_output}\n\nChart filename: {chart_filename}"
+        return f"<Final answer>:-\n{summary}"
 
-        result = f"<Final Answer>:-\n{summary}\n\nChart filename: {chart_filename}"
-        
-        return result
     except Exception as e:
-        return f"ERROR OCCURRED:\n{str(traceback.print_exc(file=sys.stdout))}\n\n If Column not found then call 'Extract_Column_Names' to get column names and then call 'Read_CSV_As_String' tool with input example:- 'download/SmokeTest_Report.csv;Test,Status: 03/21/2023,Comment: 03/21/2023'"
+        error_traceback = traceback.format_exc()
+        return f"ERROR OCCURRED:\n{error_traceback}\n\nIf Column not found then call 'Extract_Column_Names' to get column names and then call 'Read_CSV_As_String' with input example: 'download/SmokeTest_Report.csv;Test,Status: 03/21/2023,Comment: 03/21/2023'"
+
+
 
 @tool
 def create_chart(input_string: str) -> str:
@@ -347,9 +413,11 @@ def generate_prompt(user_query):
         step 2: and then take columns from the suitable file using 'Extract_Column_Names' tool 
         step 3: and then only select column name 'Test' + all the column names which contains the desired date
         step 4: call 'Read_CSV_As_String' tool by giving selected columns with filename in a specific format, example 'file_path;column1,column2'
-        step 5: when we get output containing <Final Answer>:- then we are done, we have the summary. We can show it to the user.
+        step 5: show to full observation to the user 'As it is' in final output. Don't touch any word. After that, All done successfully you can Abort.
         
-        
+        NOTE: you have to include observation section in final output you can not say Details of the failed tests have been provided in the observation section. 
+        NOTE2: Always focus on dates, if user have requested for a date then only give those column names which contain that date (there will be always three columns:- Test, (column that have 'Status:' with some date) and (column that have 'Comment:' with some date)) , will give that input to the 'Read_CSV_As_String' tool 
+        NOTE3: Add \\n after each detail in the summary output so that after final parsing it can generate better readable output.
         
         USER QUERY: {user_query}
         """
@@ -385,23 +453,110 @@ def save_uploaded_file(uploaded_file):
     return save_path
 
 
+# def extract_filename(text):
+#     """Extract a filename from the output text if present."""
+#     match = re.search(r'\b\w+[-\w]*(?:\.png|\.jpg)\b', text)
+#     return match.group(0) if match else None
+
+# def display_message(msg):
+#     """Display a message in the chat, handling text and image files separately."""
+#     role, content = msg['role'], msg['content']
+#     if content.endswith(('.png', '.jpg')):
+#         filepath = os.path.join("generated_charts", content)
+#         if os.path.exists(filepath):
+#             image = Image.open(filepath)
+#             st.image(image, caption=f'{role.capitalize()}: Output Image')
+#         else:
+#             st.error(f"File not found: {filepath}")
+#     else:
+#         st.write(f"{role.capitalize()}: {content}")
+
+# def display_message(msg):
+#     """
+#     Display a message in the chat, handling text and image files separately.
+#     This function ensures that text is displayed with the image when needed.
+#     """
+#     role, content = msg['role'], msg['content']
+
+#     # Extract filename if present in the content
+#     filename = extract_filename(content)
+
+#     # Display the text content
+#     # st.markdown(f"**{role.capitalize()}**: *{content}*")
+#     st.write(f"**{role.capitalize()}**: *{content}*")
+
+#     # If a filename was found, display the image
+#     if filename:
+#         filepath = os.path.join(f"generated_charts/{filename}")  # Assuming the filename includes the path
+#         if os.path.exists(filepath):
+#             image = Image.open(filepath)
+#             st.image(image, caption="Output Image")
+#         else:
+#             st.error(f"File not found: {filepath}")
+
+
+# def main():
+#     """Main function to run the Streamlit app."""
+#     st.set_page_config(page_title="Chat with CSV/Excel", page_icon=":file_folder:")
+#     st.title("Chat with CSV/Excel")
+
+#     uploaded_file = st.sidebar.file_uploader("Choose a file to upload", type=['csv', 'xlsx'])
+
+#     # Initialize or retrieve chat history from session state
+#     if "messages" not in st.session_state:
+#         st.session_state["messages"] = [{"role": "system", "content": "Welcome! Upload a file and ask any question related to the data."}]
+
+#     user_question = st.chat_input("Ask any question about your data")
+#     if user_question:
+#         st.session_state["messages"].append({"role": "user", "content": user_question})
+
+#         if uploaded_file:
+#             with st.spinner('Processing your query...'):
+#                 output = execute_custom_df_agent_query(user_question)
+#                 output_text = next(iter(output.get('Output', [])), "")
+#                 filename = extract_filename(output_text)
+
+#                 # Add message for filename or output text
+#                 content_to_display = filename if filename else output_text
+#                 st.session_state["messages"].append({"role": "assistant", "content": content_to_display})
+
+#         else:
+#             st.session_state["messages"].append({"role": "assistant", "content": "Please upload a file to proceed."})
+
+#     # Always display the chat history
+#     for msg in st.session_state["messages"]:
+#         display_message(msg)
+                
+
+
 def extract_filename(text):
     """Extract a filename from the output text if present."""
-    match = re.search(r'\b\w+[-\w]*(?:\.png|\.jpg)\b', text)
-    return match.group(0) if match else None
+    match = re.search(r'generated_charts/[a-zA-Z0-9_\-]+\.(?:png|jpg)', text)
+    if match:
+        return match.group(0)
+    return None
 
 def display_message(msg):
-    """Display a message in the chat, handling text and image files separately."""
+    """
+    Display a message in the chat, handling text and image files separately.
+    Ensures text and associated images are displayed as intended.
+    """
     role, content = msg['role'], msg['content']
-    if content.endswith(('.png', '.jpg')):
-        filepath = os.path.join("generated_charts", content)
+
+    # Always display the text content
+    st.write(f"**{role.capitalize()}**: {(content)}")
+
+    # Extract filename if present in the content
+    filename = extract_filename(content)
+
+    # If a filename was found, display the image
+    if filename:
+        filepath = os.path.join(filename)  # Update the path as necessary
         if os.path.exists(filepath):
             image = Image.open(filepath)
-            st.image(image, caption=f'{role.capitalize()}: Output Image')
+            st.image(image, caption="Output Image")
         else:
             st.error(f"File not found: {filepath}")
-    else:
-        st.write(f"{role.capitalize()}: {content}")
 
 def main():
     """Main function to run the Streamlit app."""
@@ -420,22 +575,29 @@ def main():
 
         if uploaded_file:
             with st.spinner('Processing your query...'):
+                # Example: Replace with your actual function to handle the file and user question
                 output = execute_custom_df_agent_query(user_question)
                 output_text = next(iter(output.get('Output', [])), "")
                 filename = extract_filename(output_text)
 
-                # Add message for filename or output text
-                content_to_display = filename if filename else output_text
-                st.session_state["messages"].append({"role": "assistant", "content": content_to_display})
+                # Ensure the full text is added as a message regardless of image
+                st.session_state["messages"].append({"role": "assistant", "content": output_text})
 
         else:
             st.session_state["messages"].append({"role": "assistant", "content": "Please upload a file to proceed."})
 
-    # Always display the chat history
+    # Display the chat history
     for msg in st.session_state["messages"]:
         display_message(msg)
-                
 
-    
+
+
+temp = """
+step 4: Always check, I repeat always check if <Final Answer>:- text has some values like total number of passed or failed (don't come up with any random number), if it doesn't have that data then recall the tool 'Read_CSV_As_String' , you have to include observation section in final output
+step 5: when we get output containing <Final Answer>:- with the data like number of passed and number of failed tests, then we are done, we have the summary. We can show it to the user. 
+"""
+
+
+
 if __name__ == "__main__":
     main()
