@@ -20,29 +20,29 @@ import sys, traceback
 
 
 ######################################################################################################
-from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
-# Load environment variables from .env file
-load_dotenv()
+# from dotenv import load_dotenv
+# from langchain_openai import ChatOpenAI
+# # Load environment variables from .env file
+# load_dotenv()
 
-# Access the OPENAI API key securely
-try:
-    api_key = os.getenv("OPENAI_API_KEY")
-except:
-    pass
-# Ensure API key is set in environment (should be done securely, not hardcoded)
-if api_key:
-    os.environ["OPENAI_API_KEY"] = api_key
-else:
-    pass
-    # raise EnvironmentError("API key not found. Please check your .env file.")
+# # Access the OPENAI API key securely
+# try:
+#     api_key = os.getenv("OPENAI_API_KEY")
+# except:
+#     pass
+# # Ensure API key is set in environment (should be done securely, not hardcoded)
+# if api_key:
+#     os.environ["OPENAI_API_KEY"] = api_key
+# else:
+#     pass
+#     # raise EnvironmentError("API key not found. Please check your .env file.")
 
-# Initialize the LLM model with an API key and specific model configuration.
-llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo", temperature=0)
+# # Initialize the LLM model with an API key and specific model configuration.
+# llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo", temperature=0)
 ######################################################################################################
 
 # Initialize the chat model
-# llm = Ollama(model="openhermes", base_url="http://localhost:11434", verbose=True)
+llm = Ollama(model="openhermes", base_url="http://localhost:11434", verbose=True)
 
 # Base directory for files
 BASE_DIR = os.getcwd()  # Modify this path to the directory you are using
