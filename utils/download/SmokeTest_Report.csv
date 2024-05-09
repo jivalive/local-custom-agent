@@ -1,20 +1,22 @@
-Test ,Date: 03/21/2023,Comment,Date: 03/17/2023,Comment2
-FW Boot Up (Check depthcharge screen comes up in dev mode),Pass,,Pass,
-"Boot from USB stick, #rootdev -s should show USB",Pass,,Fail,
-"OS Installation to storage/NVMe, reboot and check OS boot to login screen",Pass,,Fail,
-Chrome login,Pass,,Fail,
-Chrome browse,Pass,,Fail,
-"USB Key Board, mouse, Pen Drive: USB 2.0/USB3.x",Pass,,Fail,
-Trackpad,Pass,,Fail,
-SSH to DuT,Pass,,Fail,
+Test,Status: 03/21/2023,Comment: 03/21/2023,Date: 03/17/2023,Comment: 03/17/2023,,
+FW Boot Up (Check depthcharge screen comes up in dev mode),Pass,,Pass,,,
+"Boot from USB stick, #rootdev -s should show USB",Pass,,Fail,,,
+"OS Installation to storage/NVMe, reboot and check OS boot to login screen",Pass,,Fail,,,
+Chrome login,Pass,,Fail,,,
+Chrome browse,Pass,,Fail,,,
+"USB Key Board, mouse, Pen Drive: USB 2.0/USB3.x",Pass,,Fail,,,
+S0ix – 10 cycle,Fail,"System does not S0ix power state; system stays in S0 power state when suspended
+
+Verified with two scenarios - ethernet only and Wifi only",Trackpad,Pass,,Fail
+SSH to DuT,Pass,,Fail,,,
 WiFi w/ Harrison Peak2,Pass,,Fail,"Was able to connect to chrometest wifi network at the login screen, but after logging it disconnected and unable to reconnect. Shows the error 'Error configuring network'
 
 Rebooted system tried connecting before logging in still gave error, the chrometest gets added to the list of known networks. After logging in, was able to connect by clicking on chrometest in the network list.
 
-Wifi unstable. Sometimes after reboot not able to connect to Chrometest"
-BT w/ Harrison Peak2 (Connect a BT device and check if it works),Pass,,Pass,
-Wired - RJ45 Ethernet,Pass,,Pass,
-"Test Built-in Camera app (Test build-in camera app, if not present install from chrome web store)",Pass,"Photo capture - able to capture photos with both UFC and WFC; can view the preview of the captured image as well with no issues
+Wifi unstable. Sometimes after reboot not able to connect to Chrometest",,
+BT w/ Harrison Peak2 (Connect a BT device and check if it works),Pass,,Pass,,,
+Wired - RJ45 Ethernet,Pass,,Pass,,,
+"Test Built-in Camera app (Test build-in camera app, if not present install from chrome web store)",Fail,"Photo capture - able to capture photos with both UFC and WFC; can view the preview of the captured image as well with no issues
 
 Video recording - able to record video with both UFC and WFC; but there is garbage screen when recorded video is played and glitches are observed. 
 On the first try, DUT rebooted by itself after clicking start record.",Pass,"Camera preview works fine after applying the BKM
@@ -23,13 +25,13 @@ Photo capture - able to capture photos with both UFC and WFC; can view the previ
 
 Video recording - able to record video with both UFC and WFC; but there is garbage screen when recorded video is played and glitches are observed
 
-Applied camera BKM - add <cameraNumber value=""2""/> in /etc/camera/libcamhal_profile.xml file, sync and reboot"
-WebGL Aquarium (http://otc-cros-media.iind.abcd.com/),Pass,,Pass,
-eDP display,Pass,,Pass,
-VP9 Playback (http://otc-cros-media.iind.abcd.com/),Pass,,Pass,
-Reboot (#reboot from browser console),Pass,,Pass,
-shutdown -h now,Pass,,Pass,
-Files App,Pass,,Pass,
+Applied camera BKM - add <cameraNumber value=""2""/> in /etc/camera/libcamhal_profile.xml file, sync and reboot",,
+WebGL Aquarium (http://otc-cros-media.iind.abcd.com/),Pass,,Pass,,,
+eDP display,Pass,,Pass,,,
+VP9 Playback (http://otc-cros-media.iind.abcd.com/),Pass,,Pass,,,
+Reboot (#reboot from browser console),Pass,,Pass,,,
+shutdown -h now,Pass,,Pass,,,
+Files App,Pass,,Pass,,,
 "ARC++ (install a APK) with ADB Install
 
 1. Boot OS and check lscpu => supports Vt-x 
@@ -38,25 +40,25 @@ Files App,Pass,,Pass,
 4. adb connect <dut ip>
 5. Accept request on the DUT screen
 6. Download .apk file for app, copy to USB pendrive to  locally install
-7. adb install “path/to/app.apk”",Pass,,Pass,
-,,,,
-,,,,
-,,,,
-,,,,
-,,,,
-,,,,
-,,,,
-ARC++ (launch playstore and install an app),Pass,,Pass,
-"Misc (Mosys, crossystem)",Pass,,Pass,
-"twAN #mmcli -L (will list the path and index of the modem ), if not present, Fail",Pass,,Pass,
-"twAN #mmcli -m [PATH|INDEX] ([PATH][INDEX] can be found from above command), if not present, Fail",Pass,,Pass,
-Meet call connection to any other peer,Pass,,Pass,
-Meet call audio check,Pass,,Pass,
-Meet call camera/video check,Pass,,Pass,
-Coldboot test:,,,,
-Shutdown -h now,Pass,,Pass,
-check G3 in ec,Pass,,Pass,
-use powerbtn to wake,Pass,,Pass,
+7. adb install “path/to/app.apk”",Pass,,Pass,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+ARC++ (launch playstore and install an app),Pass,,Pass,,,
+"Misc (Mosys, crossystem)",Pass,,Pass,,,
+"twAN #mmcli -L (will list the path and index of the modem ), if not present, Fail",Pass,,Pass,,,
+"twAN #mmcli -m [PATH|INDEX] ([PATH][INDEX] can be found from above command), if not present, Fail",Pass,,Pass,,,
+Meet call connection to any other peer,Pass,,Pass,,,
+Meet call audio check,Pass,,Pass,,,
+Meet call camera/video check,Pass,,Pass,,,
+Coldboot test:,,,,,,
+Shutdown -h now,Pass,,Pass,,,
+check G3 in ec,Pass,,Pass,,,
+use powerbtn to wake,Pass,,Pass,,,
 S0ix – 10 cycle,Fail,"System does not S0ix power state; system stays in S0 power state when suspended
 
 Verified with two scenarios - ethernet only and Wifi only",Fail,"Tried 5 times with both ethernet and wifi connect and disconnected
@@ -74,7 +76,7 @@ Wakealarm errors: 0
 Firmware log errors: 0
 EC detected AP suspend errors: 0
 s0ix errors: 0
-"
+",,
 "RC6 & MC6 is enabled
 #cat /sys/class/drm/card1/gt/gt0/rc6_enable #rc6 
 #cat /sys/class/drm/card1/gt/gt1/rc6_enable #mc6 ",Pass,"localhost ~ # cat /sys/class/drm/card0/gt/gt0/rc6_enable
@@ -85,7 +87,7 @@ localhost ~ # cat /sys/class/drm/card0/gt/gt1/rc6_enable
 1
 localhost ~ # cat /sys/class/drm/card0/gt/gt1/rc6_enable
 1
-"
+",,
 "Check if MC6 increments 
 #cat /sys/kernel/debug/dri/1/gt1/drpc  #mc6 
 should see ""RC6 residency since boot:"" value increment",Pass,"localhost ~ # cat /sys/kernel/debug/dri/0/gt1/drpc | grep ""RC6 residency""
@@ -94,7 +96,7 @@ localhost ~ # cat /sys/kernel/debug/dri/0/gt1/drpc | grep ""RC6 residency""
 RC6 residency since boot: 992186 (2539997 us)
 ",Pass,"localhost ~ # cat /sys/kernel/debug/dri/0/gt1/drpc | grep ""RC6 residency""
 RC6 residency since boot: 1812950 (2320576 us)
-"
+",,
 "check DC5
 #cat /sys/kernel/debug/dri/1/i915_dmc_info #dc5/6 
 If DC3 -> DC5 count is incrementing, then display is in DC5 ",Pass,"localhost ~ # cat /sys/kernel/debug/dri/0/i915_dmc_info | grep ""DC5""
@@ -103,7 +105,7 @@ localhost ~ # cat /sys/kernel/debug/dri/0/i915_dmc_info | grep ""DC5""
 DC3 -> DC5 count: 565",Pass,"
 localhost ~ # cat /sys/kernel/debug/dri/0/i915_dmc_info | grep ""DC5""
 DC3 -> DC5 count: 611
-"
+",,
 "S0ix sub-state residencies
 #cat /sys/kernel/debug/pmc_core/substate_residencies 
 s0i3.0/s0i2.0 residency should increment",Fail,"localhost ~ # cat /sys/kernel/debug/pmc_core/substate_residencies
@@ -116,41 +118,41 @@ Substate   Residency
 S0i2.0     0
 S0i2.1     0
 S0i2.2     0
-"
+",,
 "S0ix residency
 #cat /sys/kernel/debug/pmc_core/slp_s0_residency_usec
 residency should increment",Fail,"localhost ~ # cat /sys/kernel/debug/pmc_core/slp_s0_residency_usec
 0
 ",Fail,"localhost ~ # cat /sys/kernel/debug/pmc_core/slp_s0_residency_usec
 0
-"
-Listing audio card: aplay -l,Pass,,Pass,
-Listing recording dmic: arecord -l,Pass,,Pass,
-Youtube Play with Audio ( http://otc-chromeos-media.jf.abcd.com/),Pass,,Pass,
-"Audio Record using meet or ""speakpipe"" or any such recording app (using headset)",Pass,,Pass,
+",,
+Listing audio card: aplay -l,Pass,,Pass,,,
+Listing recording dmic: arecord -l,Pass,,Pass,,,
+Youtube Play with Audio ( http://otc-chromeos-media.jf.abcd.com/),Pass,,Pass,,,
+"Audio Record using meet or ""speakpipe"" or any such recording app (using headset)",Pass,,Pass,,,
 "Local Video Playback:
 Copy file to Downloads and play complete video
 
-https://jira.devtools.abcd.com/secure/attachment/2685258/bbb_full.ffmpeg.720x480.mp4.libx264_500kbps_25fps.libfaac_stereo_128kbps_44100Hz.mp4",Pass,,Pass,
-Type C Pen Drive – Port0,Pass,,Pass,
-Type C Disp : HDMI display -Port0,Pass,,Pass,
-Type C Disp :  DP display -Port0,Pass,,Pass,
-Type C DOCK station display -Port0,Pass,,Pass,
-Type C Pen Drive – Port1,Pass,,Pass,
-Type C Disp : HDMI display -Port1,Pass,,Pass,
-Type C Disp : DP display -Port1,Pass,,Pass,
-Type C DOCK station display -Port1,Pass,,Pass,
-Type C Pen Drive – Port2,,,,
-Type C Disp : HDMI display -Port2,,,,
-Type C Disp : DP display -Port2,,,,
-Type C DOCK station display -Port2,,,,
-Type C Pen Drive – Port3,,,,
-Type C Disp : HDMI display -Port3,,,,
-Type C Disp : DP display -Port3,,,,
-Type C DOCK station display -Port3,,,,
-Recovery screen ,,,,
-On board HDMI,Fail,External display is not detected in kernel or UI with native HDMI port,Pass,
-On board DP,,,,
+https://jira.devtools.abcd.com/secure/attachment/2685258/bbb_full.ffmpeg.720x480.mp4.libx264_500kbps_25fps.libfaac_stereo_128kbps_44100Hz.mp4",Pass,,Pass,,,
+Type C Pen Drive – Port0,Pass,,Pass,,,
+Type C Disp : HDMI display -Port0,Pass,,Pass,,,
+Type C Disp :  DP display -Port0,Pass,,Pass,,,
+Type C DOCK station display -Port0,Pass,,Pass,,,
+Type C Pen Drive – Port1,Pass,,Pass,,,
+Type C Disp : HDMI display -Port1,Pass,,Pass,,,
+Type C Disp : DP display -Port1,Pass,,Pass,,,
+Type C DOCK station display -Port1,Pass,,Pass,,,
+Type C Pen Drive – Port2,,,,,,
+Type C Disp : HDMI display -Port2,,,,,,
+Type C Disp : DP display -Port2,,,,,,
+Type C DOCK station display -Port2,,,,,,
+Type C Pen Drive – Port3,,,,,,
+Type C Disp : HDMI display -Port3,,,,,,
+Type C Disp : DP display -Port3,,,,,,
+Type C DOCK station display -Port3,,,,,,
+Recovery screen ,,,,,,
+On board HDMI,Fail,External display is not detected in kernel or UI with native HDMI port,Pass,,,
+On board DP,,,,,,
 TBT (Lenevo),Pass,"localhost ~ # ectool usbpdmuxinfo
 Port 0: USB=0 DP=0 POLARITY=NORMAL HPD_IRQ=0 HPD_LVL=0 SAFE=0 TBT=1 USB4=0
 Port 1: USB=0 DP=0 POLARITY=NORMAL HPD_IRQ=0 HPD_LVL=0 SAFE=0 TBT=0 USB4=0
@@ -165,9 +167,9 @@ localhost ~ # cat /sys/bus/thunderbolt/devices/
 0-0/     0-0:1.1/ 0-1/     1-0/     domain0/ domain1/
 localhost ~ # cat /sys/bus/thunderbolt/devices/0-1/device_name
 ThinkPad Thunderbolt 3 Dock
-"
-Display behind TBT (Lenovo),Pass,,Pass,Had to reboot and try again to detect
-USB behind TBT (Lenovo),Pass,,Pass,
+",,
+Display behind TBT (Lenovo),Pass,,Pass,Had to reboot and try again to detect,,
+USB behind TBT (Lenovo),Pass,,Pass,,,
 USB4/Gatkex card,Pass,"localhost ~ # ectool usbpdmuxinfo
 Port 0: USB=0 DP=0 POLARITY=NORMAL HPD_IRQ=0 HPD_LVL=0 SAFE=0 TBT=0 USB4=1
 Port 1: USB=0 DP=0 POLARITY=NORMAL HPD_IRQ=0 HPD_LVL=0 SAFE=0 TBT=0 USB4=0
@@ -182,41 +184,41 @@ localhost ~ # cat /sys/bus/thunderbolt/devices/
 0-0/     0-0:1.1/ 0-1/     1-0/     domain0/ domain1/
 localhost ~ # cat /sys/bus/thunderbolt/devices/0-1/device_name
 abcd Thunderbolt generic model name
-"
-Display behind USB4/Gatkex card,Pass,,Pass,Had to reboot and try again to detect
-USB behind USB4/Gatkex card,Pass,,Pass,
-On board speaker functionality,Pass,,Pass,
-On board mic functionality,Pass,Onboard microphone works fine after applying audio BKM,Pass,
-3.5mm jack detection and functionality,Pass,,Pass,
-Touchscreen functionality,Pass,,Fail,Touchscreen is broken on A3 281 Q0IP
-generate_logs link,,,,
-,,,,
-,,,,
-,,,,
+",,
+Display behind USB4/Gatkex card,Pass,,Pass,Had to reboot and try again to detect,,
+USB behind USB4/Gatkex card,Pass,,Pass,,,
+On board speaker functionality,Pass,,Pass,,,
+On board mic functionality,Pass,Onboard microphone works fine after applying audio BKM,Pass,,,
+3.5mm jack detection and functionality,Pass,,Pass,,,
+Touchscreen functionality,Pass,,Fail,Touchscreen is broken on A3 281 Q0IP,,
+generate_logs link,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
 "Speedometer
 Run Speedometer test by clicking “Start Test” at 
 http://10.223.141.111:3655/
-(Expected: >140)",,,,
+(Expected: >140)",,,,,,
 "WebXPRT 3
 
 http://user-awfy.sh.abcd.com:8080/awfy/ARCworkloads/webxprt3/
-(Expected: >220)",,,,
+(Expected: >220)",,,,,,
 "WebGL Aquarium 5000 Fish for 5 minutes.
 
 https://webglsamples.org/aquarium/aquarium.html?numFish=5000
-(FPS: 60)",Fail,Fps varies between 45 and 50,Pass,
+(FPS: 60)",Fail,Fps varies between 45 and 50,Pass,,,
 "S0ix: Ensure system enters S0ix in dev mode
 cat /sys/kernel/debug/pmc_core/slp_s0_residency_usec",Fail,"localhost ~ # cat /sys/kernel/debug/pmc_core/slp_s0_residency_usec
 0
 ",Fail,"localhost ~ # cat /sys/kernel/debug/pmc_core/slp_s0_residency_usec
 0
-"
+",,
 "S0ix: Ensure system enters S0ix in normal mode
 cat /sys/kernel/debug/pmc_core/slp_s0_residency_usec",Fail,"localhost ~ # cat /sys/kernel/debug/pmc_core/slp_s0_residency_usec
 0
 ",Fail,"localhost ~ # cat /sys/kernel/debug/pmc_core/slp_s0_residency_usec
 0
-"
+",,
 "Basic Residency check in S0-Idle (Idle Display ON) 
 in dev mode
 1. Boot the system with the BKC, login.
@@ -247,7 +249,7 @@ There is no modules directory.",Fail,"localhost ~ # cd /usr/local/lib/
 localhost /usr/local/lib # ls
 debug  flimflam  portage  python-exec  systemd  tmpfiles.d  udev
 
-There is no modules directory."
+There is no modules directory.",,
 "
 Basic Residency check in S0-Idle (Idle Display ON) 
 in normal mode
@@ -278,8 +280,8 @@ There is no modules directory.",Fail,"localhost ~ # cd /usr/local/lib/
 localhost /usr/local/lib # ls
 debug  flimflam  portage  python-exec  systemd  tmpfiles.d  udev
 
-There is no modules directory."
-Power Load Test,Pass,,Pass,
+There is no modules directory.",,
+Power Load Test,Pass,,Pass,,,
 "PCX residency	
 ""1.) Check to see that the system is entering PC10.
 i.) PC10: """"cat /sys/kernel/debug/pmc_core/package_cstate_show""""
@@ -299,19 +301,19 @@ Package C7 : 0
 Package C8 : 0
 Package C9 : 0
 Package C10 : 0
-"
+",,
 "twAN Enumeration	
 1.) Check lspci	",Pass,"localhost ~ # lspci | grep MEDIATEK
 59:00.0 Wireless controller [0d40]: MEDIATEK Corp. Device 4d75 (rev 01)
 ",Pass,"localhost ~ # lspci | grep MEDIATEK
 59:00.0 Wireless controller [0d40]: MEDIATEK Corp. Device 4d75 (rev 01)
-"
+",,
 "Turbo Enablement	
 ""1) iotools rdmsr 0 0x1a0
 2) Check that turbo is not disabled at bit 38
 (e.g. 0x0000004000850089 -> turbo disabled, 0x0000000000850089 -> turbo enabled)""	",Pass,"localhost ~ # iotools rdmsr 0 0x1a0
 0x0000000000850089",Pass,"localhost ~ # iotools rdmsr 0 0x1a0
-0x0000000000850089"
+0x0000000000850089",,
 "HW Decoder Enablement
 ""1) vainfo
 2) Ensure a valid Driver version is shown (e.g. """"vainfo: Driver version: abcd iHD driver for abcd(R) Gen Graphics - 21.2.3 (5bbec6e)"""")
@@ -330,7 +332,7 @@ libva info: Found init function __vaDriverInit_1_17
 libva info: va_openDriver() returns 0
 vainfo: VA-API version: 1.17 (libva 2.17.0)
 vainfo: Driver version: abcd iHD driver for abcd(R) Gen Graphics - 22.6.6 (112b71a)
-vainfo: Supported profile and entrypoints"
+vainfo: Supported profile and entrypoints",,
 "Boot Time
 ""Ensure release, non-serial CB with no FSP logs is being used.
 1) /usr/share/vboot/bin/set_gbb_flags 0x00
@@ -348,12 +350,12 @@ Total Time: 1,075,800
 
 localhost ~ # cbmem -t | grep ""Total""
 Total Time: 2,100,965
-"
+",,
 "S0ix Resume Time	
 1.) echo 1 > /var/lib/power_manager/suspend_to_idle
 2.) restart powerd
 3.) suspend_stress_test -c 3 --suspend_min=10
-4.) take average of resume time... (dmesg | grep """"resume of devices"""")",Fail,System does not enter s0ix,Fail,System does not enter s0ix
+4.) take average of resume time... (dmesg | grep """"resume of devices"""")",Fail,System does not enter s0ix,Fail,System does not enter s0ix,,
 abcdtool -t (check if TME enabled),Pass,"CPU: ID 0xa06a1, Processor Type 0x0, Family 0x6, Model 0xaa, Stepping 0x1
 Northbridge: 8086:7d02 (unknown)
 Southbridge: 8086:7e04 (unknown)
@@ -372,7 +374,7 @@ IGD: 8086:7d45 (unknown)
 TME supported : YES
 TME locked    : YES
 TME enabled   : YES
-===================================================="
+====================================================",,
 abcdtool -k (check if KeyLocker enabled),Fail,"CPU: ID 0xa06a1, Processor Type 0x0, Family 0x6, Model 0xaa, Stepping 0x1
 Northbridge: 8086:7d02 (unknown)
 Southbridge: 8086:7e04 (unknown)
@@ -389,4 +391,4 @@ IGD: 8086:7d45 (unknown)
 ============= Dumping abcd Key Locker status =============
 Key Locker supported : YES
 AESKL instructions enabled : NO
-==========================================================="
+===========================================================",,

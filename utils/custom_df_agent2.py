@@ -162,6 +162,9 @@ def generate_prompt(user_query):
 
         USER QUERY: {user_query}
         """
+    
+    elif 'summary' in user_query.lower() or 'summarize' in user_query.lower():
+        pass
     else:
         return f"""
         TASK: Analyze the user's query to understand what specific information is needed.

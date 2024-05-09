@@ -16,7 +16,7 @@ from PIL import Image
 import os
 import uuid
 import time
-import sys
+import sys, traceback
 
 
 ######################################################################################################
@@ -79,34 +79,97 @@ def st_capture(output_func):
         if clean_output:
             output_func(clean_output)
 
-# @tool
-# def final_summary(summary: str) -> str:
-#     """This tool returns the summary of the data to the user"""
-#     summary = "Please summarize the below data :- \n\n" + summary
-#     return summary
-    
+
+##########################################################################################################
 @tool
-def read_csv_as_string(filename: str) -> str:
-    """This tool takes a filepath input data and returns the CSV data as a string."""
+def read_csv_as_string(input_string: str) -> str:
+    """
+    Reads specified columns from a CSV or Excel file and returns the data as a CSV string.
+    Additionally, it performs actions like counting 'Pass' and 'Fail' under a specified column,
+    noting comments and test names where the status is 'Fail', and creating a pie chart based on 'Pass' and 'Fail' values.
     
-    # Read the CSV or Excel file into a DataFrame
-    if filename.endswith('.csv'):
-        df = pd.read_csv(filename)
-    elif filename.endswith('.xlsx') or filename.endswith('.xls'):
-        df = pd.read_excel(filename)
-    else:
-        raise ValueError("Unsupported file format. Only .csv, .xlsx, or .xls files are supported.")
+    Args:
+    input_string (str): A single string containing the file path and column names,
+                        formatted as 'file_path;column1,column2,...'.
+    
+    Returns:
+    str: A summary which contains <Final Answer>:- and the details. Then can understand that we have the final answer that user has requested.
+    """
+    try:
+        # Split the input string to separate the file path and column names
+        parts = input_string.split(';')
+        if len(parts) != 2:
+            raise ValueError("Input string format must be 'file_path;column1,column2,...'")
+        
+        file_path, column_names = parts[0], parts[1]
+        column_names = column_names.split(',')  # Split column names into a list
 
-    # Convert DataFrame values into a formatted CSV string
-    csv_string_io = StringIO()
-    df.to_csv(csv_string_io, index=False)
-    csv_string = csv_string_io.getvalue()
-    csv_string_io.close()
+        print('filename: ', file_path)
+        print('column_names: ', column_names)
+        
+        # Read the CSV or Excel file into a DataFrame
+        if file_path.endswith('.csv'):
+            df = pd.read_csv(file_path)
+        elif file_path.endswith('.xlsx') or file_path.endswith('.xls'):
+            df = pd.read_excel(file_path)
+        else:
+            raise ValueError("Unsupported file format. Only .csv, .xlsx, or .xls files are supported.")
 
-    # Add text at the beginning of the CSV string
-    csv_string = "Below is the CSV data, please provide the summary of this data:\n\n" + csv_string
+        print(df.head())
+        # Normalize input column names to match DataFrame column names' case sensitivity and spacing
+        normalized_df_columns = {col.strip().lower(): col for col in df.columns}
+        selected_columns = []
+        for col in column_names:
+            col_normalized = col.strip().lower()
+            if col_normalized in normalized_df_columns:
+                selected_columns.append(normalized_df_columns[col_normalized])
+            else:
+                raise ValueError(f"Column '{col}' not found in the file.")
 
-    return csv_string
+        print('selected_columns: ', selected_columns)
+        
+        # Check if the list of columns is empty (which means no valid columns were provided)
+        if not selected_columns:
+            raise ValueError("No valid columns provided or columns not found in the data.")
+
+        # Select only the specified columns
+        df = df[selected_columns]
+        
+        fail_comments = df.loc[df[selected_columns[1]].str.lower() == 'fail', selected_columns[2]]
+        print(f"Failed comments:-\n{fail_comments.count()}\n")
+
+        pass_count = (df[selected_columns[1]].str.lower() == 'pass').sum()
+        fail_count = (df[selected_columns[1]].str.lower() == 'fail').sum()
+        
+        print(pass_count)
+        print(fail_count)
+        
+        fail_rows = df[df[selected_columns[1]].str.lower() == 'fail']
+        fail_comments = fail_rows[selected_columns[2]].dropna().tolist()
+        print(f"Failed comments:-\n{fail_comments}\n")
+        
+        failed_tests_output = "Below are the failed tests:"
+    
+        for index, comment in enumerate(fail_comments, start=1):
+            failed_tests_output += f"\n\n{index}. {comment}"
+
+
+        # Create a pie chart based on 'Pass' and 'Fail' values
+        plt.figure(figsize=(6, 6))
+        plt.pie([pass_count, fail_count], labels=['Pass', 'Fail'], autopct='%1.1f%%', startangle=140)
+        chart_filename = f"generated_charts/pie_chart_{uuid.uuid4()}.png"  # Generate unique filename using uuid
+        plt.savefig(chart_filename)
+
+        # Prepare summary information
+        summary = f"Summary:\nPass count: {pass_count}\nFail count: {fail_count}\n"
+        if fail_comments:
+            summary += failed_tests_output
+
+        result = f"<Final Answer>:-\n{summary}\n\nChart filename: {chart_filename}"
+        
+        return result
+    except Exception as e:
+        return f"ERROR OCCURRED:\n{str(traceback.print_exc(file=sys.stdout))}\n\n If Column not found then call 'Extract_Column_Names' to get column names and then call 'Read_CSV_As_String' tool with input example:- 'download/SmokeTest_Report.csv;Test,Status: 03/21/2023,Comment: 03/21/2023'"
 
 @tool
 def create_chart(input_string: str) -> str:
@@ -217,13 +280,8 @@ create_chart_tool = Tool(
 read_csv_as_string_tool = Tool(
     func=read_csv_as_string,
     name="Read_CSV_As_String",
-    description="This tool take a filepath input data and return the csv to string converted format of the data."
+    description="This tool take a filepath input data and performs some operation and then returns the summary of that data. when we get output containing <Final Answer>:- then we are done, we have the summary. We can show it to the user."
 )
-# final_summary_tool = Tool(
-#     func=final_summary,
-#     name="Final_Summary",
-#     description="This tool returns the summary of the data to the user"
-# )
 
 # Initialize the agent with the list of tools
 agent = initialize_agent(
@@ -278,19 +336,27 @@ def generate_prompt(user_query):
         
         USER QUERY: {user_query}
         """
+    elif 'summary' in user_query.lower() or 'summarize' in user_query.lower():
+        return f"""
+        TASK: Analyze the user's query to understand what specific information is needed.
+        Use the 'Check_Folder_And_List_Files' tool to list all relevant files, files will be in directory named download. Once the file is identified,
+        Check if user query has the date, if it has the date then we have a specific roadmap to summarize.
+        
+        Roadmap to summarize is :-
+        step 1: first call 'Check_Folder_And_List_Files' tool to get all file names, files will be in directory named 'download'.
+        step 2: and then take columns from the suitable file using 'Extract_Column_Names' tool 
+        step 3: and then only select column name 'Test' + all the column names which contains the desired date
+        step 4: call 'Read_CSV_As_String' tool by giving selected columns with filename in a specific format, example 'file_path;column1,column2'
+        step 5: when we get output containing <Final Answer>:- then we are done, we have the summary. We can show it to the user.
+        
+        
+        
+        USER QUERY: {user_query}
+        """
     else:
         return f"""
         TASK: Analyze the user's query to understand what specific information is needed.
-        If it relates to file details, confirm the presence of the download folder with name download and use the 'Check_Folder_And_List_Files' tool to list all relevant files.
-        If the query involves specific data within the files, use the 'Extract_Column_Names' tool to detail the structure of the specified data file,
-        making sure to include the directory in the file path for example file path will be download/filename.xlsx 
-        Remember you need to Always follow one action at a time.
-        If user has asked to summarize then you should call Check_Folder_And_List_Files and then give filepath to Read_CSV_As_String tool and this will return data in string format to summarize.
-        Remember that Read_CSV_As_String tool will only take filepath and returns a string output of data, so use the tool accordingly.
-        If user wants the summary then simply get the whole csv data by calling read_csv_as_string and then giving summary and analysis of that data in a simple paragraph and return result.
-        If Read_CSV_As_String returns data then summarize the data and call Final_Summary tool and show data to user.
-        If user wants summary then use tools in this sequence -> Check_Folder_And_List_Files -> Read_CSV_As_String -> final output
-        
+        If its a general query then simply return with a general response. But restrict yourself your saying anything you don't know much about. It's a professional setting so you are not allowed to use humor or jokes or any irrelevant information. Just respond with formal messages.
         
         USER QUERY: {user_query}
         """
@@ -318,106 +384,6 @@ def save_uploaded_file(uploaded_file):
     # Return the path to the saved file for further use
     return save_path
 
-
-# def main():
-#     st.title("Chat with CSV/Excel")
-    
-#     uploaded_file = st.sidebar.file_uploader("Choose a file to upload", type=['csv', 'xlsx'])
-    
-#     if uploaded_file is not None:
-#         save_uploaded_file(uploaded_file)
-#         user_question = st.text_input(f"Ask any question:")
-
-#         # # with terminal output
-#         # if user_question:
-#         #     full_prompt = generate_prompt(user_query=user_question)
-#         #     output_placeholder = st.empty()  # Place to display the output
-#         #     with st_capture(lambda x: output_placeholder.code(x)):
-#         #         agent.run(full_prompt)
-                
-#         # only final output
-#         if user_question:
-#             # Display spinner and capture start time
-#             with st.spinner('Processing your query...'):
-#                 start_time2 = time.time()
-#                 output = execute_custom_df_agent_query(user_query=user_question)
-#                 end_time2 = time.time()
-#                 elapsed_time2 = end_time2 - start_time2
-                
-#             print(f"final_result:-\n{output}\n")
-            
-#             output_text = next(iter(output.get('Output', [])), "")
-#             print(f"output_text_result:-\n{output_text}\n")
-            
-#             filename = extract_filename(output_text)
-#             if filename:
-#                 if os.path.exists("generated_charts/"+filename):
-#                     image = Image.open("generated_charts/"+filename)
-#                     st.image(image, caption='Output Image')
-#                 else:
-#                     st.error(f"File not found: {filename}")
-#             else:
-#                 st.write("No image file name found in the output.")  # Fallback if no filename is extracted
-#             st.info(f"Got result in {elapsed_time2:.2f} seconds")
-
-# def main():
-#     # Custom CSS to style the input bar at the bottom
-#     st.markdown("""
-#         <style>
-#             .fixed-bottom {
-#                 position: fixed;
-#                 bottom: 0;
-#                 left: 0;
-#                 width: 100%;
-#                 padding: 10px 20px;
-#                 background-color: #f1f1f1;
-#                 border-top: 2px solid #ccc;
-#             }
-#             /* Additional CSS for other elements can go here */
-#         </style>
-#         """, unsafe_allow_html=True)
-
-#     st.title("Chat with CSV/Excel")
-
-#     # Upper part of the page for outputs
-#     output_container = st.container()
-
-#     # Sidebar for uploading files
-#     uploaded_file = st.sidebar.file_uploader("Choose a file to upload", type=['csv', 'xlsx'])
-#     if uploaded_file is not None:
-#         save_uploaded_file(uploaded_file)
-    
-#     # Bottom part of the page for user input
-#     with st.container():
-#         with st.form(key='query_form', clear_on_submit=False):
-#             st.markdown('<div class="fixed-bottom">', unsafe_allow_html=True)
-#             user_question = st.text_input("Ask any question:", "")
-#             submit_button = st.form_submit_button("Submit Query")
-#             st.markdown('</div>', unsafe_allow_html=True)
-    
-#     if submit_button and user_question:
-#         with output_container:
-#             with st.spinner('Processing your query...'):
-#                 start_time = time.time()
-#                 output = execute_custom_df_agent_query(user_query=user_question)
-#                 end_time = time.time()
-#                 elapsed_time = end_time - start_time
-            
-#             print(f"final_result:-\n{output}\n")
-            
-#             output_text = next(iter(output.get('Output', [])), "")
-#             print(f"output_text_result:-\n{output_text}\n")
-            
-#             filename = extract_filename(output_text)
-#             if filename:
-#                 if os.path.exists("generated_charts/"+filename):
-#                     image = Image.open("generated_charts/"+filename)
-#                     st.image(image, caption='Output Image')
-#                 else:
-#                     st.error(f"File not found: {filename}")
-#             else:
-#                 st.write("No image file name found in the output.")  # Fallback if no filename is extracted
-#             st.info(f"Got result in {elapsed_time:.2f} seconds")
 
 def extract_filename(text):
     """Extract a filename from the output text if present."""
@@ -473,8 +439,3 @@ def main():
     
 if __name__ == "__main__":
     main()
-    # Example usage of the function
-    # user_query = "Create a chart using marks data file"
-    # user_query = "Create a sales chart using sales data file"
-    # output = execute_custom_df_agent_query(user_query=user_query)
-    # print(output)

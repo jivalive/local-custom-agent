@@ -79,34 +79,72 @@ def st_capture(output_func):
         if clean_output:
             output_func(clean_output)
 
-# @tool
-# def final_summary(summary: str) -> str:
-#     """This tool returns the summary of the data to the user"""
-#     summary = "Please summarize the below data :- \n\n" + summary
-#     return summary
-    
 @tool
-def read_csv_as_string(filename: str) -> str:
-    """This tool takes a filepath input data and returns the CSV data as a string."""
+def create_last_summary_result(summary: str) -> str:
+    """This tool returns the last summary result in pointers."""
+    summary = "Next step is to present summary in pointers:- \n\n" + summary
+    return summary
+
+##########################################################################################################
+@tool
+def read_csv_as_string(input_string: str) -> str:
+    """
+    Reads specified columns from a CSV or Excel file and returns the data as a CSV string.
     
-    # Read the CSV or Excel file into a DataFrame
-    if filename.endswith('.csv'):
-        df = pd.read_csv(filename)
-    elif filename.endswith('.xlsx') or filename.endswith('.xls'):
-        df = pd.read_excel(filename)
-    else:
-        raise ValueError("Unsupported file format. Only .csv, .xlsx, or .xls files are supported.")
+    Args:
+    input_string (str): A single string containing the file path and column names,
+                        formatted as 'file_path;column1,column2,column3'.
+    
+    Returns:
+    str: Formatted CSV data as a string from the specified columns.
+    """
+    try:
+        # Split the input string to separate the file path and column names
+        parts = input_string.split(';')
+        if len(parts) != 2:
+            raise ValueError("Input string format must be 'file_path;column1,column2,...'")
+        
+        file_path, column_names = parts[0], parts[1]
+        column_names = column_names.split(',')  # Split column names into a list
 
-    # Convert DataFrame values into a formatted CSV string
-    csv_string_io = StringIO()
-    df.to_csv(csv_string_io, index=False)
-    csv_string = csv_string_io.getvalue()
-    csv_string_io.close()
+        # Read the CSV or Excel file into a DataFrame
+        if file_path.endswith('.csv'):
+            df = pd.read_csv(file_path)
+        elif file_path.endswith('.xlsx') or file_path.endswith('.xls'):
+            df = pd.read_excel(file_path)
+        else:
+            raise ValueError("Unsupported file format. Only .csv, .xlsx, or .xls files are supported.")
 
-    # Add text at the beginning of the CSV string
-    csv_string = "Below is the CSV data, please provide the summary of this data:\n\n" + csv_string
+        # Normalize input column names to match DataFrame column names' case sensitivity and spacing
+        normalized_df_columns = {col.strip().lower(): col for col in df.columns}
+        selected_columns = []
+        for col in column_names:
+            col_normalized = col.strip().lower()
+            if col_normalized in normalized_df_columns:
+                selected_columns.append(normalized_df_columns[col_normalized])
+            else:
+                raise ValueError(f"Column '{col}' not found in the file.")
 
-    return csv_string
+        # Check if the list of columns is empty (which means no valid columns were provided)
+        if not selected_columns:
+            raise ValueError("No valid columns provided or columns not found in the data.")
+
+        # Select only the specified columns
+        df = df[selected_columns]
+
+        # Convert DataFrame to a formatted CSV string
+        csv_string_io = StringIO()
+        df.to_csv(csv_string_io, index=False)
+        csv_string = csv_string_io.getvalue()
+        csv_string_io.close()
+
+        # Optional: Add text or additional formatting if needed
+        csv_string = "Below is the CSV data for generating summary:\n\n" + csv_string
+
+        return csv_string
+    except Exception as e:
+        return f"ERROR OCCURED: {str(e)}"
+        
 
 @tool
 def create_chart(input_string: str) -> str:
@@ -219,15 +257,15 @@ read_csv_as_string_tool = Tool(
     name="Read_CSV_As_String",
     description="This tool take a filepath input data and return the csv to string converted format of the data."
 )
-# final_summary_tool = Tool(
-#     func=final_summary,
-#     name="Final_Summary",
-#     description="This tool returns the summary of the data to the user"
-# )
+create_last_summary_result_tool = Tool(
+    func=create_last_summary_result,
+    name="Create_Last_Summary_Result",
+    description="This tool returns the last summary result in pointers."
+)
 
 # Initialize the agent with the list of tools
 agent = initialize_agent(
-    tools=[list_files_tool, get_column_names_tool, create_chart_tool, read_csv_as_string_tool],
+    tools=[list_files_tool, get_column_names_tool, create_chart_tool, read_csv_as_string_tool, create_last_summary_result_tool],
     llm=llm,
     agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
     verbose=True,
@@ -278,6 +316,25 @@ def generate_prompt(user_query):
         
         USER QUERY: {user_query}
         """
+    elif 'summary' in user_query.lower() or 'summarize' in user_query.lower():
+        return f"""
+        TASK: Analyze the user's query to understand what specific information is needed.
+        Use the 'Check_Folder_And_List_Files' tool to list all relevant files, files will be in directory named download. Once the file is identified,
+        Check if user query has the date, if it has the date then we have a specific roadmap to summarize.
+        
+        Roadmap to summarize is :-
+        step 1: first call 'Check_Folder_And_List_Files' tool to get all file names, files will be in directory named 'download'.
+        step 2: and then take columns from the suitable file using 'Extract_Column_Names' tool 
+        step 3: and then only select column name 'Test' + all the column names which contains the desired date
+        step 4: take the csv string to summarize using 'Read_CSV_As_String' tool by giving selected columns with filename in a specific format, example 'file_path;column1,column2'
+        step 5: once you get the lengthy data, then generate summary report in which count the passed results and failed results and show both numbers in report and add comments of all failed results in report            
+        step 6: now call 'Create_Last_Summary_Result' tool with csv data as a single input string
+        
+        Note: dont call 'Read_CSV_As_String' once you got csv data after including "Below is the CSV data for generating summary", just show summary
+        
+        
+        USER QUERY: {user_query}
+        """
     else:
         return f"""
         TASK: Analyze the user's query to understand what specific information is needed.
@@ -294,6 +351,18 @@ def generate_prompt(user_query):
         
         USER QUERY: {user_query}
         """
+
+
+    # """        If it relates to file details, confirm the presence of the download folder with name download and use the 'Check_Folder_And_List_Files' tool to list all relevant files.
+    #     If the query involves specific data within the files, use the 'Extract_Column_Names' tool to detail the structure of the specified data file,
+    #     making sure to include the directory in the file path for example file path will be download/filename.xlsx 
+    #     Remember you need to Always follow one action at a time.
+    #     If user has asked to summarize then you should call Check_Folder_And_List_Files and then give filepath to Read_CSV_As_String tool and this will return data in string format to summarize.
+    #     Remember that Read_CSV_As_String tool will only take filepath and returns a string output of data, so use the tool accordingly.
+    #     If user wants the summary then simply get the whole csv data by calling read_csv_as_string and then giving summary and analysis of that data in a simple paragraph and return result.
+    #     If Read_CSV_As_String returns data then summarize the data and call Final_Summary tool and show data to user.
+    #     If user wants summary then use tools in this sequence -> Check_Folder_And_List_Files -> Read_CSV_As_String -> final output
+    # """
 
 def execute_custom_df_agent_query(user_query):
     full_prompt = generate_prompt(user_query=user_query)
