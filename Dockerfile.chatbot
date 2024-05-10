@@ -9,4 +9,4 @@ copy requirements.txt ./requirements.txt
 run pip3 install -r requirements.txt
 copy . .
 # ENTRYPOINT ["streamlit", "run"]
-CMD ["streamlit", "run", "streamlit_excel3.py"]
+CMD ["streamlit", "run", "utils/custom_agent.py"]
