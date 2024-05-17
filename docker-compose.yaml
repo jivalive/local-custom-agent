@@ -8,9 +8,9 @@ services:
     networks:
       - app
 
-  local-llama3-ready:
-    image: jivalive/llama3-ready
-    container_name: local-llama3-ready
+  local-openhermes-ready:
+    image: jivalive/openhermes
+    container_name: local-openhermes-ready
     ports:
       - "11434:11434"
     networks:

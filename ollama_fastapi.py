@@ -16,7 +16,7 @@ async def fetch_data_from_external_api(data):
             async with httpx.AsyncClient(timeout=1200.0) as client:
                 # response = ollama.generate(model=data['model'], prompt=data['prompt'])
                 response = await client.post(
-                    "http://local-mistral-ready:11434/api/generate",
+                    "http://local-openhermes-ready:11434/api/generate",
                     json=data
                 )
                 response.raise_for_status()

@@ -42,7 +42,7 @@ import sys, traceback
 ######################################################################################################
 
 # Initialize the chat model
-llm = Ollama(model="llama3", base_url="http://local-llama3-ready:11434", verbose=True)
+llm = Ollama(model="openhermes", base_url="http://local-openhermes-ready:11434", verbose=True)
 
 # Base directory for files
 BASE_DIR = os.getcwd()  # Modify this path to the directory you are using
